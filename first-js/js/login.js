@@ -1,17 +1,18 @@
 function login() {
     const username = document.getElementById('username').value;
-    const Password = document.getElementById('Password').value;
-    const conpassword = document.getElementById('conpassword').value;
-    const fname = document.getElementById('fname').value;
+    const password = document.getElementById('password').value;
 
-    if((username == "") || (Password == "") || (conpassword == "") || (fname == "")) {
-        alert("Fill this Out");
-    }
-    
-    else if(Password != conpassword) {
-        alert("Password Mismatch");
+    if((username == "Lyrica" && password == "12345")) {
+        error.innerHTML = "Login Successful";
+        error.style.color = 'red';
+    error.style.backgroundColor = 'yellow';
+    error.style.visibility = 'visible';
+
     }
 else {
-    alert("Login Success");
+     error.innerHTML = "Wrong Login";
+        error.style.color = 'black';
+        error.style.backgroundColor = 'red';
+        error.style.visibility = 'visible';
 }
-    }
+}
