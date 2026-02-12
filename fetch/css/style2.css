@@ -1,0 +1,122 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    padding: 40px;
+    background: radial-gradient(circle at top, #0f0f1f, #000010);
+    color: #fff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ===== Neon Floating Circles ===== */
+body::before, body::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.2;
+    z-index: 0;
+    animation: float 12s linear infinite;
+}
+body::before {
+    width: 400px;
+    height: 400px;
+    background: #ff00ff;
+    top: -150px;
+    left: -150px;
+}
+body::after {
+    width: 600px;
+    height: 600px;
+    background: #00ffff;
+    bottom: -200px;
+    right: -200px;
+}
+@keyframes float {
+    0% { transform: translateY(0) translateX(0); }
+    50% { transform: translateY(25px) translateX(25px); }
+    100% { transform: translateY(0) translateX(0); }
+}
+
+/* ===== Page Heading ===== */
+h2 {
+    font-size: 32px;
+    margin-bottom: 30px;
+    color: #ff00ff;
+    text-shadow: 0 0 8px #ff00ff, 0 0 15px #00ffff;
+}
+
+/* ===== Table ===== */
+table {
+    width: 100%;
+    max-width: 1200px;
+    border-collapse: collapse;
+    background: rgba(10, 10, 25, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+    z-index: 1;
+}
+
+th {
+    padding: 12px;
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    color: #000;
+    font-weight: bold;
+    text-shadow: 0 0 3px #fff;
+}
+
+td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #222;
+    font-size: 14px;
+}
+
+/* ===== Row Effects ===== */
+tr:nth-child(even) {
+    background: #11112a;
+}
+tr:nth-child(odd) {
+    background: #0f0f25;
+}
+tr:hover {
+    background: #222233;
+    box-shadow: 0 0 15px #ff00ff inset, 0 0 15px #00ffff inset;
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+/* ===== Logout Button ===== */
+button {
+    margin-top: 25px;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    text-shadow: 0 0 5px #fff;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px #ff00ff, 0 0 25px #00ffff;
+}
+
+/* ===== Responsive ===== */
+@media screen and (max-width: 768px) {
+    table {
+        font-size: 12px;
+    }
+    th, td {
+        padding: 8px;
+    }
+    h2 {
+        font-size: 26px;
+    }
+}
