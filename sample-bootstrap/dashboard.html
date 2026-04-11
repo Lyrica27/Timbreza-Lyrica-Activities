@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Employee Info System</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- Top Header -->
+        <header class="app-header">
+            <h3>Employee Info System</h3>
+        </header>
+
+        <!-- Horizontal Nav -->
+        <nav class="app-nav">
+            <ul class="nav-links">
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="employee_list.html">Employees</a></li>
+            </ul>
+            <div class="nav-logout">
+                <a href="login.html" class="btn-logout">Logout</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <div class="top-bar">
+                <h4>Dashboard</h4>
+                <span id="welcomeMsg" style="font-size: 13px; color: #64748b;">Welcome, Admin</span>
+            </div>
+
+            <div class="page-content fade-in">
+
+                <!-- Stat Cards -->
+                <div class="row g-4 mb-4">
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card stat-blue">
+                            <div class="stat-icon">&#x1F4C8;</div>
+                            <div class="stat-number" id="activeCount">0</div>
+                            <div class="stat-label">Active Employees</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card stat-green">
+                            <div class="stat-icon">&#x2705;</div>
+                            <div class="stat-number" id="permanentCount">0</div>
+                            <div class="stat-label">Permanent</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card stat-yellow">
+                            <div class="stat-icon">&#x23F3;</div>
+                            <div class="stat-number" id="temporaryCount">0</div>
+                            <div class="stat-label">Temporary</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card stat-red">
+                            <div class="stat-icon">&#x1F6AB;</div>
+                            <div class="stat-number" id="separatedCount">0</div>
+                            <div class="stat-label">Separated</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <span>&#x1F4CB; Recent Activities</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Activity</th>
+                                    <th>Employee</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityTable">
+                            </tbody>
+                        </table>
+                        <div class="empty-state" id="emptyState" style="display: none;">
+                            <div class="empty-icon">&#x1F4ED;</div>
+                            <p>No recent activities yet</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        // Load employees and compute stats
+        let employees = JSON.parse(localStorage.getItem("employees")) || [];
+
+        let active = employees.filter(e => e.status === "Permanent" || e.status === "Temporary").length;
+        let permanent = employees.filter(e => e.status === "Permanent").length;
+        let temporary = employees.filter(e => e.status === "Temporary").length;
+        let separated = employees.filter(e => e.status === "Separated").length;
+
+        document.getElementById("activeCount").textContent = active;
+        document.getElementById("permanentCount").textContent = permanent;
+        document.getElementById("temporaryCount").textContent = temporary;
+        document.getElementById("separatedCount").textContent = separated;
+
+        // Load recent activities
+        let activities = JSON.parse(localStorage.getItem("activities")) || [];
+
+        let table = document.getElementById("activityTable");
+        let emptyState = document.getElementById("emptyState");
+
+        if (activities.length === 0) {
+            emptyState.style.display = "block";
+        } else {
+            // Show latest first
+            activities.slice().reverse().forEach(act => {
+                table.innerHTML += `
+        <tr>
+            <td>${act.id}</td>
+            <td>${act.activity}</td>
+            <td>${act.employee}</td>
+            <td>${act.date}</td>
+        </tr>
+        `;
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>

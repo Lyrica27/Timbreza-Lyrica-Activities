@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Information - Employee Info System</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- Top Header -->
+        <header class="app-header">
+            <h3>Employee Info System</h3>
+        </header>
+
+        <!-- Horizontal Nav -->
+        <nav class="app-nav">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="employee_list.html" class="active">Employees</a></li>
+            </ul>
+            <div class="nav-logout">
+                <a href="login.html" class="btn-logout">Logout</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <div class="top-bar">
+                <h4 id="pageTitle">&#x1F4CB; Employee Information</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="employee_list.html">Employees</a></li>
+                        <li class="breadcrumb-item active" id="breadcrumbMode">View</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="page-content fade-in">
+
+                <div class="content-card" style="max-width: 650px;">
+                    <div class="card-header">
+                        <span id="cardTitle">Employee Details</span>
+                        <span id="modeBadge" class="badge-status badge-permanent">View Mode</span>
+                    </div>
+                    <div class="card-body form-section">
+
+                        <div class="mb-3">
+                            <label class="form-label">Employee ID</label>
+                            <input id="empId" class="form-control" readonly style="background: #f8fafc;">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Last Name</label>
+                                <input id="lname" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">First Name</label>
+                                <input id="fname" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Birthday</label>
+                                <input id="birthday" type="date" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status</label>
+                                <select id="status" class="form-select">
+                                    <option>Permanent</option>
+                                    <option>Temporary</option>
+                                    <option>Separated</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" style="border-color: #e2e8f0;">
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button id="saveBtn" class="btn btn-pink" onclick="updateEmployee()"
+                                style="display:none;">
+                                Save Changes
+                            </button>
+                            <a id="trainingsBtn" href="#" class="btn"
+                                style="background: #e0f2fe; color: #0369a1; border-radius: 8px; padding: 10px 20px; font-weight: 500;">
+                                &#x1F4DA; Trainings
+                            </a>
+                            <a id="serviceBtn" href="#" class="btn"
+                                style="background: #f3e8ff; color: #7c3aed; border-radius: 8px; padding: 10px 20px; font-weight: 500;">
+                                &#x1F4C4; Service Record
+                            </a>
+                            <a href="employee_list.html" class="btn btn-outline-pink">
+                                &larr; Back
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        let employees = JSON.parse(localStorage.getItem("employees")) || [];
+
+        let viewId = localStorage.getItem("viewEmployee");
+        let editId = localStorage.getItem("editEmployee");
+
+        let isViewMode = viewId !== null;
+        let id = viewId || editId;
+
+        let employee = employees.find(emp => emp.id == id);
+
+        if (employee) {
+
+            document.getElementById("empId").value = employee.id;
+            document.getElementById("lname").value = employee.lname;
+            document.getElementById("fname").value = employee.fname;
+            document.getElementById("birthday").value = employee.birthday || "";
+            document.getElementById("status").value = employee.status;
+
+            // Set trainings and service record links with employee ID
+            document.getElementById("trainingsBtn").href = "trainings.html?empId=" + employee.id;
+            document.getElementById("serviceBtn").href = "service_record.html?empId=" + employee.id;
+
+            // Store current employee ID for sub-pages
+            localStorage.setItem("currentEmployee", employee.id);
+
+            if (isViewMode) {
+                // View mode — all fields readonly
+                document.getElementById("lname").setAttribute("readonly", true);
+                document.getElementById("fname").setAttribute("readonly", true);
+                document.getElementById("birthday").setAttribute("readonly", true);
+                document.getElementById("status").setAttribute("disabled", true);
+                document.getElementById("saveBtn").style.display = "none";
+                document.getElementById("lname").style.background = "#f8fafc";
+                document.getElementById("fname").style.background = "#f8fafc";
+                document.getElementById("birthday").style.background = "#f8fafc";
+                document.getElementById("modeBadge").textContent = "View Mode";
+                document.getElementById("modeBadge").className = "badge-status badge-permanent";
+                document.getElementById("breadcrumbMode").textContent = "View";
+            } else {
+                // Edit mode — fields editable, show save
+                document.getElementById("saveBtn").style.display = "inline-block";
+                document.getElementById("modeBadge").textContent = "Edit Mode";
+                document.getElementById("modeBadge").className = "badge-status badge-temporary";
+                document.getElementById("breadcrumbMode").textContent = "Edit";
+            }
+
+        }
+
+        function updateEmployee() {
+
+            employee.lname = document.getElementById("lname").value;
+            employee.fname = document.getElementById("fname").value;
+            employee.birthday = document.getElementById("birthday").value;
+            employee.status = document.getElementById("status").value;
+
+            localStorage.setItem("employees", JSON.stringify(employees));
+
+            // Log activity
+            let activities = JSON.parse(localStorage.getItem("activities")) || [];
+            activities.push({
+                id: activities.length + 1,
+                activity: "Updated Employee",
+                employee: employee.fname + " " + employee.lname,
+                date: new Date().toLocaleDateString()
+            });
+            localStorage.setItem("activities", JSON.stringify(activities));
+
+            alert("Employee Updated!");
+            window.location.href = "employee_list.html";
+
+        }
+
+    </script>
+
+</body>
+
+</html>

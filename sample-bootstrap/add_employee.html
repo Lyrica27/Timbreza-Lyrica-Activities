@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Employee - Employee Info System</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- Top Header -->
+        <header class="app-header">
+            <h3>Employee Info System</h3>
+        </header>
+
+        <!-- Horizontal Nav -->
+        <nav class="app-nav">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="employee_list.html" class="active">Employees</a></li>
+            </ul>
+            <div class="nav-logout">
+                <a href="login.html" class="btn-logout">Logout</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <div class="top-bar">
+                <h4>&#x2795; Add New Employee</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="employee_list.html">Employees</a></li>
+                        <li class="breadcrumb-item active">Add New</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="page-content fade-in">
+
+                <div class="content-card" style="max-width: 600px;">
+                    <div class="card-header">
+                        <span>Employee Details</span>
+                    </div>
+                    <div class="card-body form-section">
+
+                        <div class="mb-3">
+                            <label class="form-label">Employee ID</label>
+                            <input id="empId" type="number" class="form-control" placeholder="Enter Employee ID">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Last Name</label>
+                                <input id="lname" type="text" class="form-control" placeholder="Enter Last Name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">First Name</label>
+                                <input id="fname" type="text" class="form-control" placeholder="Enter First Name">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Birthday</label>
+                                <input id="birthday" type="date" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status</label>
+                                <select id="status" class="form-select">
+                                    <option>Permanent</option>
+                                    <option>Temporary</option>
+                                    <option>Separated</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" style="border-color: #e2e8f0;">
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-pink" onclick="saveEmployee()">
+                                Save Employee
+                            </button>
+                            <a href="employee_list.html" class="btn btn-outline-pink">
+                                Cancel
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        function saveEmployee() {
+
+            let empId = document.getElementById("empId").value;
+            let lname = document.getElementById("lname").value;
+            let fname = document.getElementById("fname").value;
+            let birthday = document.getElementById("birthday").value;
+            let status = document.getElementById("status").value;
+
+            if (empId === "" || lname === "" || fname === "") {
+                alert("Please fill in Employee ID, Last Name, and First Name.");
+                return;
+            }
+
+            let employees = JSON.parse(localStorage.getItem("employees")) || [];
+
+            // Check if ID already exists
+            let exists = employees.find(e => e.id == empId);
+            if (exists) {
+                alert("Employee ID already exists!");
+                return;
+            }
+
+            let newEmployee = {
+                id: parseInt(empId),
+                lname: lname,
+                fname: fname,
+                birthday: birthday,
+                status: status
+            };
+
+            employees.push(newEmployee);
+            localStorage.setItem("employees", JSON.stringify(employees));
+
+            // Log activity
+            saveActivity("Added Employee", fname + " " + lname);
+
+            alert("Employee Added!");
+            window.location.href = "employee_list.html";
+
+        }
+
+        function saveActivity(activity, employee) {
+
+            let activities = JSON.parse(localStorage.getItem("activities")) || [];
+
+            let newActivity = {
+                id: activities.length + 1,
+                activity: activity,
+                employee: employee,
+                date: new Date().toLocaleDateString()
+            };
+
+            activities.push(newActivity);
+            localStorage.setItem("activities", JSON.stringify(activities));
+
+        }
+
+    </script>
+
+</body>
+
+</html>

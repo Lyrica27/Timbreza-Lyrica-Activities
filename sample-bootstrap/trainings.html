@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainings - Employee Info System</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- Top Header -->
+        <header class="app-header">
+            <h3>Employee Info System</h3>
+        </header>
+
+        <!-- Horizontal Nav -->
+        <nav class="app-nav">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="employee_list.html" class="active">Employees</a></li>
+            </ul>
+            <div class="nav-logout">
+                <a href="login.html" class="btn-logout">Logout</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <div class="top-bar">
+                <h4 id="pageTitle">&#x1F4DA; Trainings</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="employee_list.html">Employees</a></li>
+                        <li class="breadcrumb-item"><a href="#" id="empLink">Employee</a></li>
+                        <li class="breadcrumb-item active">Trainings</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="page-content fade-in">
+
+                <!-- Search & Add -->
+                <div class="row g-3 mb-4 align-items-center">
+                    <div class="col">
+                        <div class="search-bar">
+                            <span class="search-icon">&#x1F50D;</span>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search trainings..."
+                                oninput="loadTrainings()">
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-pink" data-bs-toggle="modal" data-bs-target="#addModal"
+                            onclick="resetForm()">
+                            + Add Training
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Trainings Table -->
+                <div class="content-card">
+                    <div class="card-body p-0">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th style="width: 160px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trainingTable">
+                            </tbody>
+                        </table>
+                        <div class="empty-state" id="emptyState" style="display: none;">
+                            <div class="empty-icon">&#x1F4DA;</div>
+                            <p>No trainings recorded yet. Click "Add Training" to get started.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="#" id="backBtn" class="btn btn-outline-pink">
+                        &larr; Back to Employee
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Add/Edit Training Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Add Training</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body form-section">
+                    <input type="hidden" id="editIndex" value="-1">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input id="trainingTitle" type="text" class="form-control" placeholder="Enter training title">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        <input id="trainingDate" type="date" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
+                        style="border-radius: 8px; padding: 8px 20px;">Cancel</button>
+                    <button type="button" class="btn btn-pink" onclick="saveTraining()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        // Get employee ID from URL or localStorage
+        let params = new URLSearchParams(window.location.search);
+        let empId = params.get("empId") || localStorage.getItem("currentEmployee");
+        let storageKey = "trainings_" + empId;
+
+        // Show employee name in title
+        let employees = JSON.parse(localStorage.getItem("employees")) || [];
+        let employee = employees.find(e => e.id == empId);
+        if (employee) {
+            document.getElementById("pageTitle").innerHTML = "&#x1F4DA; Trainings — " + employee.fname + " " + employee.lname;
+            document.getElementById("empLink").textContent = employee.fname + " " + employee.lname;
+        }
+
+        // Set back button
+        document.getElementById("backBtn").onclick = function () {
+            window.history.back();
+        };
+
+        document.getElementById("empLink").onclick = function (e) {
+            e.preventDefault();
+            window.history.back();
+        };
+
+        function resetForm() {
+            document.getElementById("trainingTitle").value = "";
+            document.getElementById("trainingDate").value = "";
+            document.getElementById("editIndex").value = "-1";
+            document.getElementById("modalTitle").textContent = "Add Training";
+        }
+
+        function loadTrainings() {
+
+            let trainings = JSON.parse(localStorage.getItem(storageKey)) || [];
+            let search = document.getElementById("searchInput").value.toLowerCase();
+            let table = document.getElementById("trainingTable");
+            let emptyState = document.getElementById("emptyState");
+
+            table.innerHTML = "";
+
+            let filtered = trainings.filter(t => search === "" || t.title.toLowerCase().includes(search));
+
+            if (filtered.length === 0) {
+                emptyState.style.display = "block";
+            } else {
+                emptyState.style.display = "none";
+                trainings.forEach((t, index) => {
+                    if (search === "" || t.title.toLowerCase().includes(search)) {
+                        table.innerHTML += `
+                    <tr>
+                        <td><strong>${t.id}</strong></td>
+                        <td>${t.title}</td>
+                        <td>${t.date}</td>
+                        <td>
+                            <div class="action-group">
+                                <button class="btn-action btn-edit" onclick="editTraining(${index})">Edit</button>
+                                <button class="btn-action btn-delete" onclick="deleteTraining(${index})">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                    }
+                });
+            }
+
+        }
+
+        function saveTraining() {
+
+            let title = document.getElementById("trainingTitle").value;
+            let date = document.getElementById("trainingDate").value;
+
+            if (title === "") {
+                alert("Please enter a training title.");
+                return;
+            }
+
+            let trainings = JSON.parse(localStorage.getItem(storageKey)) || [];
+            let editIndex = parseInt(document.getElementById("editIndex").value);
+
+            if (editIndex >= 0) {
+                trainings[editIndex].title = title;
+                trainings[editIndex].date = date;
+            } else {
+                let newTraining = {
+                    id: trainings.length > 0 ? trainings[trainings.length - 1].id + 1 : 1,
+                    title: title,
+                    date: date
+                };
+                trainings.push(newTraining);
+            }
+
+            localStorage.setItem(storageKey, JSON.stringify(trainings));
+
+            resetForm();
+
+            // Close modal
+            let modal = bootstrap.Modal.getInstance(document.getElementById("addModal"));
+            modal.hide();
+
+            loadTrainings();
+
+        }
+
+        function editTraining(index) {
+
+            let trainings = JSON.parse(localStorage.getItem(storageKey)) || [];
+            let t = trainings[index];
+
+            document.getElementById("trainingTitle").value = t.title;
+            document.getElementById("trainingDate").value = t.date;
+            document.getElementById("editIndex").value = index;
+            document.getElementById("modalTitle").textContent = "Edit Training";
+
+            let modal = new bootstrap.Modal(document.getElementById("addModal"));
+            modal.show();
+
+        }
+
+        function deleteTraining(index) {
+
+            if (!confirm("Are you sure you want to delete this training?")) return;
+
+            let trainings = JSON.parse(localStorage.getItem(storageKey)) || [];
+            trainings.splice(index, 1);
+            localStorage.setItem(storageKey, JSON.stringify(trainings));
+
+            loadTrainings();
+
+        }
+
+        loadTrainings();
+
+    </script>
+
+</body>
+
+</html>

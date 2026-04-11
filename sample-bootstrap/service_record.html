@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Record - Employee Info System</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- Top Header -->
+        <header class="app-header">
+            <h3>Employee Info System</h3>
+        </header>
+
+        <!-- Horizontal Nav -->
+        <nav class="app-nav">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="employee_list.html" class="active">Employees</a></li>
+            </ul>
+            <div class="nav-logout">
+                <a href="login.html" class="btn-logout">Logout</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <div class="top-bar">
+                <h4 id="pageTitle">&#x1F4C4; Service Record</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="employee_list.html">Employees</a></li>
+                        <li class="breadcrumb-item"><a href="#" id="empLink">Employee</a></li>
+                        <li class="breadcrumb-item active">Service Record</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="page-content fade-in">
+
+                <!-- Search & Add -->
+                <div class="row g-3 mb-4 align-items-center">
+                    <div class="col">
+                        <div class="search-bar">
+                            <span class="search-icon">&#x1F50D;</span>
+                            <input type="text" id="searchInput" class="form-control"
+                                placeholder="Search service records..." oninput="loadRecords()">
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-pink" data-bs-toggle="modal" data-bs-target="#addModal"
+                            onclick="resetForm()">
+                            + Add Record
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Service Record Table -->
+                <div class="content-card">
+                    <div class="card-body p-0">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Position</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th style="width: 160px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordTable">
+                            </tbody>
+                        </table>
+                        <div class="empty-state" id="emptyState" style="display: none;">
+                            <div class="empty-icon">&#x1F4C4;</div>
+                            <p>No service records yet. Click "Add Record" to get started.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="#" id="backBtn" class="btn btn-outline-pink">
+                        &larr; Back to Employee
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Add/Edit Service Record Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Add Service Record</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body form-section">
+                    <input type="hidden" id="editIndex" value="-1">
+                    <div class="mb-3">
+                        <label class="form-label">Position</label>
+                        <input id="position" type="text" class="form-control" placeholder="Enter position">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input id="startDate" type="date" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">End Date</label>
+                        <input id="endDate" type="date" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
+                        style="border-radius: 8px; padding: 8px 20px;">Cancel</button>
+                    <button type="button" class="btn btn-pink" onclick="saveRecord()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        // Get employee ID from URL or localStorage
+        let params = new URLSearchParams(window.location.search);
+        let empId = params.get("empId") || localStorage.getItem("currentEmployee");
+        let storageKey = "records_" + empId;
+
+        // Show employee name in title
+        let employees = JSON.parse(localStorage.getItem("employees")) || [];
+        let employee = employees.find(e => e.id == empId);
+        if (employee) {
+            document.getElementById("pageTitle").innerHTML = "&#x1F4C4; Service Record — " + employee.fname + " " + employee.lname;
+            document.getElementById("empLink").textContent = employee.fname + " " + employee.lname;
+        }
+
+        // Set back button
+        document.getElementById("backBtn").onclick = function () {
+            window.history.back();
+        };
+
+        document.getElementById("empLink").onclick = function (e) {
+            e.preventDefault();
+            window.history.back();
+        };
+
+        function resetForm() {
+            document.getElementById("position").value = "";
+            document.getElementById("startDate").value = "";
+            document.getElementById("endDate").value = "";
+            document.getElementById("editIndex").value = "-1";
+            document.getElementById("modalTitle").textContent = "Add Service Record";
+        }
+
+        function loadRecords() {
+
+            let records = JSON.parse(localStorage.getItem(storageKey)) || [];
+            let search = document.getElementById("searchInput").value.toLowerCase();
+            let table = document.getElementById("recordTable");
+            let emptyState = document.getElementById("emptyState");
+
+            table.innerHTML = "";
+
+            let filtered = records.filter(r => search === "" || r.position.toLowerCase().includes(search));
+
+            if (filtered.length === 0) {
+                emptyState.style.display = "block";
+            } else {
+                emptyState.style.display = "none";
+                records.forEach((r, index) => {
+                    if (search === "" || r.position.toLowerCase().includes(search)) {
+                        table.innerHTML += `
+                    <tr>
+                        <td><strong>${r.id}</strong></td>
+                        <td>${r.position}</td>
+                        <td>${r.start}</td>
+                        <td>${r.end}</td>
+                        <td>
+                            <div class="action-group">
+                                <button class="btn-action btn-edit" onclick="editRecord(${index})">Edit</button>
+                                <button class="btn-action btn-delete" onclick="deleteRecord(${index})">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                    }
+                });
+            }
+
+        }
+
+        function saveRecord() {
+
+            let position = document.getElementById("position").value;
+            let startDate = document.getElementById("startDate").value;
+            let endDate = document.getElementById("endDate").value;
+
+            if (position === "") {
+                alert("Please enter a position.");
+                return;
+            }
+
+            let records = JSON.parse(localStorage.getItem(storageKey)) || [];
+            let editIndex = parseInt(document.getElementById("editIndex").value);
+
+            if (editIndex >= 0) {
+                records[editIndex].position = position;
+                records[editIndex].start = startDate;
+                records[editIndex].end = endDate;
+            } else {
+                let newRecord = {
+                    id: records.length > 0 ? records[records.length - 1].id + 1 : 1,
+                    position: position,
+                    start: startDate,
+                    end: endDate
+                };
+                records.push(newRecord);
+            }
+
+            localStorage.setItem(storageKey, JSON.stringify(records));
+
+            resetForm();
+
+            // Close modal
+            let modal = bootstrap.Modal.getInstance(document.getElementById("addModal"));
+            modal.hide();
+
+            loadRecords();
+
+        }
+
+        function editRecord(index) {
+
+            let records = JSON.parse(localStorage.getItem(storageKey)) || [];
+            let r = records[index];
+
+            document.getElementById("position").value = r.position;
+            document.getElementById("startDate").value = r.start;
+            document.getElementById("endDate").value = r.end;
+            document.getElementById("editIndex").value = index;
+            document.getElementById("modalTitle").textContent = "Edit Service Record";
+
+            let modal = new bootstrap.Modal(document.getElementById("addModal"));
+            modal.show();
+
+        }
+
+        function deleteRecord(index) {
+
+            if (!confirm("Are you sure you want to delete this record?")) return;
+
+            let records = JSON.parse(localStorage.getItem(storageKey)) || [];
+            records.splice(index, 1);
+            localStorage.setItem(storageKey, JSON.stringify(records));
+
+            loadRecords();
+
+        }
+
+        loadRecords();
+
+    </script>
+
+</body>
+
+</html>

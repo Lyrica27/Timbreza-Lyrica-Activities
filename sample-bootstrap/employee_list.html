@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employees - Employee Info System</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- Top Header -->
+        <header class="app-header">
+            <h3>Employee Info System</h3>
+        </header>
+
+        <!-- Horizontal Nav -->
+        <nav class="app-nav">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="employee_list.html" class="active">Employees</a></li>
+            </ul>
+            <div class="nav-logout">
+                <a href="login.html" class="btn-logout">Logout</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <div class="top-bar">
+                <h4>&#x1F465; Employees</h4>
+            </div>
+
+            <div class="page-content fade-in">
+
+                <!-- Search & Add -->
+                <div class="row g-3 mb-4 align-items-center">
+                    <div class="col">
+                        <div class="search-bar">
+                            <span class="search-icon">&#x1F50D;</span>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search employees..."
+                                oninput="loadEmployees()">
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <a href="add_employee.html" class="btn btn-pink">
+                            + Add Employee
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Employee Table -->
+                <div class="content-card">
+                    <div class="card-body p-0">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Emp ID</th>
+                                    <th>Last Name</th>
+                                    <th>First Name</th>
+                                    <th>Status</th>
+                                    <th style="width: 200px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeeTable">
+                            </tbody>
+                        </table>
+                        <div class="empty-state" id="emptyState" style="display: none;">
+                            <div class="empty-icon">&#x1F465;</div>
+                            <p>No employees found. Click "Add Employee" to get started.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        function getStatusBadge(status) {
+            let badgeClass = 'badge-permanent';
+            if (status === 'Temporary') badgeClass = 'badge-temporary';
+            if (status === 'Separated') badgeClass = 'badge-separated';
+            return `<span class="badge-status ${badgeClass}">${status}</span>`;
+        }
+
+        function loadEmployees() {
+
+            let employees = JSON.parse(localStorage.getItem("employees")) || [];
+            let search = document.getElementById("searchInput").value.toLowerCase();
+            let table = document.getElementById("employeeTable");
+            let emptyState = document.getElementById("emptyState");
+
+            table.innerHTML = "";
+
+            let filtered = employees.filter(emp => {
+                let fullName = (emp.lname + " " + emp.fname).toLowerCase();
+                return search === "" || fullName.includes(search);
+            });
+
+            if (filtered.length === 0) {
+                emptyState.style.display = "block";
+            } else {
+                emptyState.style.display = "none";
+                filtered.forEach((emp) => {
+                    table.innerHTML += `
+                <tr>
+                    <td><strong>${emp.id}</strong></td>
+                    <td>${emp.lname}</td>
+                    <td>${emp.fname}</td>
+                    <td>${getStatusBadge(emp.status)}</td>
+                    <td>
+                        <div class="action-group">
+                            <button class="btn-action btn-view" onclick="viewEmployee(${emp.id})">View</button>
+                            <button class="btn-action btn-edit" onclick="editEmployee(${emp.id})">Edit</button>
+                            <button class="btn-action btn-delete" onclick="deleteEmployee(${emp.id})">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+                });
+            }
+
+        }
+
+        function viewEmployee(id) {
+            localStorage.setItem("viewEmployee", id);
+            localStorage.removeItem("editEmployee");
+            window.location.href = "employee_info.html";
+        }
+
+        function editEmployee(id) {
+            localStorage.setItem("editEmployee", id);
+            localStorage.removeItem("viewEmployee");
+            window.location.href = "employee_info.html";
+        }
+
+        function deleteEmployee(id) {
+
+            if (!confirm("Are you sure you want to delete this employee?")) return;
+
+            let employees = JSON.parse(localStorage.getItem("employees")) || [];
+            let employee = employees.find(e => e.id === id);
+
+            employees = employees.filter(e => e.id !== id);
+            localStorage.setItem("employees", JSON.stringify(employees));
+
+            // Remove related trainings and service records
+            localStorage.removeItem("trainings_" + id);
+            localStorage.removeItem("records_" + id);
+
+            // Log activity
+            if (employee) {
+                saveActivity("Deleted Employee", employee.fname + " " + employee.lname);
+            }
+
+            loadEmployees();
+        }
+
+        function saveActivity(activity, employee) {
+
+            let activities = JSON.parse(localStorage.getItem("activities")) || [];
+
+            let newActivity = {
+                id: activities.length + 1,
+                activity: activity,
+                employee: employee,
+                date: new Date().toLocaleDateString()
+            };
+
+            activities.push(newActivity);
+            localStorage.setItem("activities", JSON.stringify(activities));
+
+        }
+
+        loadEmployees();
+
+    </script>
+
+</body>
+
+</html>
